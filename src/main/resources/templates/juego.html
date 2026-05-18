@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picas y Fijas - Juego</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: #2c3e50 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: 600;
+        }
+        .game-container {
+            padding-top: 90px;
+            padding-bottom: 40px;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .avatar-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid white;
+            object-fit: cover;
+            background: #34495e;
+        }
+        .player-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .card-body {
+            padding: 25px;
+            background: white;
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px 20px;
+            text-align: center;
+            min-width: 100px;
+            border: 1px solid #e0e0e0;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        .result-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .badge-pica {
+            background: #f39c12;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+        .badge-fija {
+            background: #27ae60;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.2rem;
+            letter-spacing: 10px;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #ddd;
+        }
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
+        }
+        .btn-primary {
+            background: #3498db;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        .btn-outline-secondary {
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+        .alert {
+            border-radius: 10px;
+        }
+        .historial-table th, .historial-table td {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">🎯 Picas y Fijas</a>
+        <a class="navbar-brand" th:href="@{/ranking}">🏆 Ranking</a>
+    </div>
+</nav>
+
+<div class="game-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card">
+                    <div class="card-header">
+                        <img th:src="@{/avatares/{avatar}(avatar=${jugador.avatar})}"
+                             class="avatar-img"
+                             alt="Avatar">
+                        <h3 class="player-name" th:text="${jugador.username}"></h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Intentos</div>
+                                <div class="stat-value" th:text="${intentos}">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Tiempo</div>
+                                <div class="stat-value">
+                                    <span id="tiempo-segundos" th:text="${tiempo}">0</span><small>s</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <div th:if="${ultimoIntento != null}" class="result-box">
+                            <div class="result-number" th:text="${ultimoIntento}"></div>
+                            <div>
+                                <span class="badge-pica" th:text="${picas} + ' Picas'"></span>
+                                <span class="badge-fija" th:text="${fijas} + ' Fijas'"></span>
+                            </div>
+                        </div>
+
+                        <div th:if="${!partidaTerminada}">
+                            <form th:action="@{/juego/intento}" method="post">
+                                <input type="hidden" name="partidaId" th:value="${partidaId}">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Ingresa 4 dígitos diferentes</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           name="intento"
+                                           pattern="[0-9]{4}"
+                                           maxlength="4"
+                                           placeholder="1234"
+                                           required
+                                           autofocus
+                                           autocomplete="off">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 mb-2">
+                                    Probar
+                                </button>
+                                <div class="text-center">
+                                    <a th:href="@{/juego/nueva(username=${jugador.username})}"
+                                       class="btn btn-outline-secondary btn-sm">
+                                        Nueva Partida
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div th:if="${partidaTerminada}" class="alert alert-success text-center">
+                            ¡Felicidades! Has adivinado el número.<br>
+                            <a th:href="@{/ranking}" class="btn btn-primary mt-2">Ver Ranking</a>
+                            <a th:href="@{/juego/nueva(username=${jugador.username})}" class="btn btn-outline-secondary mt-2">
+                                Jugar otra vez
+                            </a>
+                        </div>
+
+                        <!-- Historial de intentos -->
+                        <div th:if="${!#lists.isEmpty(historial)}" class="mt-4">
+                            <h5 class="text-center">Historial de intentos</h5>
+                            <table class="table table-sm table-bordered text-center historial-table">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Número</th>
+                                    <th>Picas</th>
+                                    <th>Fijas</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="intento, iStat : ${historial}">
+                                    <td th:text="${iStat.index + 1}"></td>
+                                    <td th:text="${intento.numero}"></td>
+                                    <td><span class="badge-pica" th:text="${intento.picas} + ' Picas'"></span></td>
+                                    <td><span class="badge-fija" th:text="${intento.fijas} + ' Fijas'"></span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const fechaInicio = new Date("[[${fechaInicio}]]");
+    const timerElement = document.getElementById("tiempo-segundos");
+    let interval;
+
+    function actualizarCronometro() {
+        const ahora = new Date();
+        const segundos = Math.floor((ahora - fechaInicio) / 1000);
+        if (timerElement) {
+            timerElement.textContent = segundos;
+        }
+    }
+
+    if (timerElement) {
+        interval = setInterval(actualizarCronometro, 1000);
+        actualizarCronometro();
+    }
+
+    window.addEventListener('beforeunload', function() {
+        if (interval) clearInterval(interval);
+    });
+</script>
+</body>
+</html>
