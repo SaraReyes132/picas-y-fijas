@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class PicasFijasApplication {
 
-    public static void main(String[] args) {uhi
+    public static void main(String[] args) {
         SpringApplication.run(PicasFijasApplication.class, args);
     }
 }
